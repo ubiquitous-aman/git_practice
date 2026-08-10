@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Student placement dashboard — browse drives, check eligibility, and manage your applications." />
+  <title>Student Dashboard — Placement Portal</title>
+
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="pb-16">
+
+  <!-- Skip link (accessibility) -->
+  <a class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 btn btn-primary z-50" href="#main-content">
+    Skip to main content
+  </a>
+
+  <!-- ── Navbar ─────────────────────────────────────────────── -->
+  <header id="navbar" role="banner">
+    <nav class="glass-panel mx-4 mt-4 px-6 py-3 flex items-center justify-between" aria-label="Main navigation">
+      <div class="flex items-center gap-3">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-base font-bold text-white">Campus<span class="text-cyan-400">Placement</span>Portal</p>
+          <p class="text-xs text-slate-400">Student Workspace</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- User pill -->
+        <div class="user-pill">
+          <span class="online-dot bg-cyan-400"></span>
+          <span id="nav-username" class="text-sm font-semibold text-white">Loading...</span>
+          <span id="nav-role-badge" class="badge text-slate-400" style="background:rgba(255,255,255,0.08)">student</span>
+        </div>
+        <button
+          id="logout-btn"
+          type="button"
+          class="btn btn-secondary text-sm py-2 px-3"
+          aria-label="Log out of placement portal"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Logout
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ── Main Content ───────────────────────────────────────── -->
+  <main id="main-content" role="main" class="max-w-6xl mx-auto px-6 mt-6">
+
+    <!-- Academic Profile Banner -->
+    <section aria-labelledby="profile-heading" class="glass-panel p-6 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h2 id="profile-heading" class="flex items-center gap-2 text-lg font-bold text-white mb-1">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+          </svg>
+          Academic Profile
+        </h2>
+        <!-- Profile Summary (shown when profile exists) -->
+        <p id="profile-summary" class="text-sm text-slate-400 hidden"></p>
+        <!-- No profile warning -->
+        <p id="profile-missing-warning" class="text-sm text-amber-400 flex items-center gap-1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Profile incomplete — fill in your academic details to see eligibility for drives.
+        </p>
+      </div>
+      <button
+        id="open-profile-modal"
+        type="button"
+        class="btn btn-secondary shrink-0"
+        aria-haspopup="dialog"
+        aria-controls="profile-modal"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        <span id="profile-btn-label">Setup Profile</span>
+      </button>
+    </section>
+
+    <!-- Success Toast inline area -->
+    <div id="inline-message" role="status" aria-live="polite" class="hidden alert alert-success mb-6"></div>
+
+    <!-- Placement Drives Section -->
+    <section aria-labelledby="drives-heading">
+      <div class="flex items-center justify-between mb-5">
+        <h2 id="drives-heading" class="flex items-center gap-2 text-xl font-bold text-white">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" aria-hidden="true">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+          Active Placement Drives
+        </h2>
+        <!-- Drive count badge -->
+        <span id="drives-count-badge" class="badge badge-applied hidden"></span>
+      </div>
+
+      <!-- Loading state -->
+      <div id="drives-loading" class="glass-panel p-10 text-center" aria-live="polite">
+        <div class="spinner mx-auto mb-3" aria-label="Loading drives"></div>
+        <p class="text-slate-400 text-sm">Fetching placement drives...</p>
+      </div>
+
+      <!-- Empty state -->
+      <div id="drives-empty" class="glass-panel p-12 text-center hidden" role="status">
+        <svg class="mx-auto mb-4 text-slate-600" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+        <p class="text-slate-400">No active placement drives right now. Check back soon!</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="drives-error" class="alert alert-error hidden" role="alert">
+        <span>Failed to load placement drives. </span>
+        <button type="button" class="underline font-semibold" onclick="Portal.Student.loadDrives()">Retry</button>
+      </div>
+
+      <!-- Drives Grid — populated by JS -->
+      <div id="drives-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 hidden" aria-label="Placement drives list">
+        <!-- Drive cards injected here by student.js -->
+      </div>
+    </section>
+
+    <!-- My Applications Section -->
+    <section aria-labelledby="applications-heading" class="mt-12">
+      <h2 id="applications-heading" class="flex items-center gap-2 text-xl font-bold text-white mb-5">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        My Applications
+      </h2>
+
+      <div id="applications-loading" class="text-slate-400 text-sm" aria-live="polite">Loading your applications...</div>
+      <div id="applications-empty" class="glass-panel p-10 text-center hidden" role="status">
+        <p class="text-slate-400">You have not applied to any drives yet.</p>
+      </div>
+
+      <!-- Applications Table -->
+      <div id="applications-table-wrapper" class="glass-panel overflow-x-auto hidden">
+        <table class="portal-table" aria-label="My submitted applications">
+          <thead>
+            <tr>
+              <th scope="col">Company</th>
+              <th scope="col">Job Role</th>
+              <th scope="col">Applied On</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody id="applications-tbody">
+            <!-- Rows injected by student.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Profile Edit Modal ─────────────────────────────────── -->
+  <div
+    id="profile-modal"
+    class="modal-overlay hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="profile-modal-title"
+  >
+    <div class="glass-panel p-8 w-full max-w-md animate-fade-in" role="document">
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="profile-modal-title" class="text-lg font-bold text-white">Academic Profile</h3>
+        <button
+          type="button"
+          class="btn btn-secondary p-2"
+          id="close-profile-modal"
+          aria-label="Close profile dialog"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="profile-form" novalidate aria-label="Academic profile form">
+        <div class="form-group">
+          <label class="form-label" for="roll-number">Roll Number</label>
+          <input type="text" id="roll-number" name="roll_number" class="form-input" placeholder="e.g. 2023CSE001" required aria-required="true" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="branch">Branch / Department</label>
+          <select id="branch" name="branch" class="form-select" required aria-required="true">
+            <option value="CSE">Computer Science Engineering (CSE)</option>
+            <option value="IT">Information Technology (IT)</option>
+            <option value="ECE">Electronics & Communication (ECE)</option>
+            <option value="MECH">Mechanical Engineering (MECH)</option>
+            <option value="CIVIL">Civil Engineering (CIVIL)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cgpa">CGPA <span class="text-slate-500">(0.00 – 10.00)</span></label>
+          <input type="number" id="cgpa" name="cgpa" class="form-input" step="0.01" min="0" max="10" placeholder="8.50" required aria-required="true" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="active-backlogs">Active Backlogs</label>
+          <input type="number" id="active-backlogs" name="active_backlogs" class="form-input" min="0" placeholder="0" required aria-required="true" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="graduation-year">Graduation Year</label>
+          <input type="number" id="graduation-year" name="graduation_year" class="form-input" min="2024" max="2030" placeholder="2027" required aria-required="true" />
+        </div>
+
+        <div id="profile-form-error" role="alert" class="hidden alert alert-error mb-4"></div>
+
+        <div class="flex gap-3 mt-6">
+          <button type="button" id="cancel-profile-modal" class="btn btn-secondary flex-1">Cancel</button>
+          <button type="submit" id="save-profile-btn" class="btn btn-primary flex-1">
+            <span>Save Profile</span>
+            <span class="spinner hidden" aria-hidden="true"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/student.js"></script>
+  <script>
+    $(document).ready(function () {
+      // Protect page: redirect unauthenticated users
+      Portal.Auth.requireAuth('student');
+      // Load dashboard data
+      Portal.Student.init();
+    });
+  </script>
+</body>
+</html>
